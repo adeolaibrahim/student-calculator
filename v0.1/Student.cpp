@@ -1,22 +1,22 @@
 #include "Student.h"
 #include <algorithm>
 #include <numeric>
-#include <random>
-#include <iomanip>
+#include <cstdlib>
+#include <ctime>
 
-// Default constructor
-Student::Student() : name(""), surname(""), homeworks(), exam(0.0) {}
+// ---------------- CONSTRUCTORS ----------------
+Student::Student() : name(""), surname(""), exam(0.0) {}
 
-// Parameterized constructor
-Student::Student(const std::string& name_, const std::string& surname_,
-                 const std::vector<double>& hw, double exam_)
-    : name(name_), surname(surname_), homeworks(hw), exam(exam_) {}
+Student::Student(const std::string& n, const std::string& s,
+                 const std::vector<double>& hw, double e)
+    : name(n), surname(s), homeworks(hw), exam(e) {}
 
-// Copy constructor
+// ---------------- COPY CONSTRUCTOR ----------------
 Student::Student(const Student& other)
-    : name(other.name), surname(other.surname), homeworks(other.homeworks), exam(other.exam) {}
+    : name(other.name), surname(other.surname),
+      homeworks(other.homeworks), exam(other.exam) {}
 
-// Copy assignment
+// ---------------- ASSIGNMENT OPERATOR ----------------
 Student& Student::operator=(const Student& other) {
     if (this != &other) {
         name = other.name;
@@ -27,74 +27,42 @@ Student& Student::operator=(const Student& other) {
     return *this;
 }
 
-// Destructor
+// ---------------- DESTRUCTOR ----------------
 Student::~Student() {
-    // nothing special to release (vector will manage itself)
+    // Nothing special to clean up (vector cleans itself)
 }
 
-// Overloaded input: expects: Name Surname hw1 hw2 ... exam
-std::istream& operator>>(std::istream& in, Student& s) {
-    // We'll read name and surname, then read the rest of the line into values
-    if (!(in >> s.name >> s.surname)) return in;
-
-    s.homeworks.clear();
-    std::string restOfLine;
-    std::getline(in, restOfLine); // rest contains homework and exam
-    if (restOfLine.empty()) {
-        // nothing more on this line
-        s.exam = 0.0;
-        return in;
-    }
-
-    // parse numbers from restOfLine
-    std::istringstream iss(restOfLine);
-    double value;
-    std::vector<double> all;
-    while (iss >> value) all.push_back(value);
-    if (!all.empty()) {
-        if (all.size() >= 1) {
-            s.exam = all.back();
-            all.pop_back();
-        } else s.exam = 0.0;
-        s.homeworks = all;
-    } else {
-        s.exam = 0.0;
-        s.homeworks.clear();
-    }
-    return in;
-}
-
-// Overloaded output: will print name and surname only (other output done in main)
-std::ostream& operator<<(std::ostream& out, const Student& s) {
-    out << s.name << " " << s.surname;
-    return out;
-}
-
+// ---------------- FINAL BY AVERAGE ----------------
 double Student::finalByAverage() const {
-    double hwAvg = 0.0;
+    double hwAverage = 0.0;
     if (!homeworks.empty()) {
-        hwAvg = std::accumulate(homeworks.begin(), homeworks.end(), 0.0) / homeworks.size();
+        hwAverage = std::accumulate(homeworks.begin(), homeworks.end(), 0.0) / homeworks.size();
     }
-    return 0.4 * hwAvg + 0.6 * exam;
+    return 0.4 * hwAverage + 0.6 * exam;  // example: 40% HW + 60% exam
 }
 
+// ---------------- FINAL BY MEDIAN ----------------
 double Student::finalByMedian() const {
-    if (homeworks.empty()) {
-        return finalByAverage();
+    if (homeworks.empty()) return 0.6 * exam; // no homework
+    std::vector<double> hwCopy = homeworks;
+    std::sort(hwCopy.begin(), hwCopy.end());
+    double median = 0.0;
+    size_t n = hwCopy.size();
+    if (n % 2 == 0) {
+        median = (hwCopy[n/2 -1] + hwCopy[n/2]) / 2.0;
+    } else {
+        median = hwCopy[n/2];
     }
-    std::vector<double> tmp = homeworks;
-    std::sort(tmp.begin(), tmp.end());
-    double median;
-    size_t n = tmp.size();
-    if (n % 2 == 1) median = tmp[n/2];
-    else median = (tmp[n/2 - 1] + tmp[n/2]) / 2.0;
-    return 0.4 * median + 0.6 * exam;
+    return 0.4 * median + 0.6 * exam; // 40% HW median + 60% exam
 }
 
-void Student::randomize(unsigned int seed, size_t hwCount, double minVal, double maxVal) {
-    std::mt19937 rng(seed);
-    std::uniform_real_distribution<double> dist(minVal, maxVal);
+// ---------------- RANDOMIZE ----------------
+void Student::randomize(unsigned int seed, int hwCount, double minVal, double maxVal) {
+    std::srand(seed);
     homeworks.clear();
-    for (size_t i = 0; i < hwCount; ++i) homeworks.push_back(std::round(dist(rng) * 10.0) / 10.0);
-    exam = std::round(dist(rng) * 10.0) / 10.0;
+    for (int i = 0; i < hwCount; ++i) {
+        double val = minVal + (std::rand() / (double)RAND_MAX) * (maxVal - minVal);
+        homeworks.push_back(val);
+    }
+    exam = minVal + (std::rand() / (double)RAND_MAX) * (maxVal - minVal);
 }

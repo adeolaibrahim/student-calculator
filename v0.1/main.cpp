@@ -34,39 +34,48 @@ int main() {
 
     std::vector<Student> students;
 
-    // ----------- MODE 1: MANUAL INPUT -----------
+    // --------------------- MODE 1: MANUAL INPUT ---------------------
     if (mode == 1) {
-        std::cout << "Enter students one per line in format:\n";
-        std::cout << "Name Surname hw1 hw2 ... hwN exam\n";
-        std::cout << "When done, enter an empty line.\n";
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Enter student data step by step.\n";
+        std::cout << "After entering homework grades, press Enter to finish HWs.\n";
+        std::cout << "Enter exam grade at the end.\n\n";
 
-        std::string line;
         while (true) {
-            std::cout << "> ";
-            if (!std::getline(std::cin, line)) break;
-            if (line.empty()) break;
-
-            std::istringstream iss(line);
             Student s;
-            if (!(iss >> s.name >> s.surname)) continue;
 
-            double v;
-            std::vector<double> nums;
-            while (iss >> v) nums.push_back(v);
+            std::cout << "Enter student first name (or empty to finish): ";
+            std::getline(std::cin, s.name);
+            if (s.name.empty()) break;
 
-            if (!nums.empty()) {
-                s.exam = nums.back();
-                nums.pop_back();
-                s.homeworks = nums;
-            } else {
-                s.exam = 0.0;
+            std::cout << "Enter student surname: ";
+            std::getline(std::cin, s.surname);
+
+            // Enter homework grades
+            s.homeworks.clear();
+            std::cout << "Enter homework grades one by one (empty line to finish):\n";
+            while (true) {
+                std::string hwLine;
+                std::getline(std::cin, hwLine);
+                if (hwLine.empty()) break;
+                double hw;
+                std::istringstream iss(hwLine);
+                if (iss >> hw) s.homeworks.push_back(hw);
             }
+
+            // Enter exam grade
+            std::cout << "Enter exam grade: ";
+            std::string examLine;
+            std::getline(std::cin, examLine);
+            std::istringstream iss(examLine);
+            if (!(iss >> s.exam)) s.exam = 0.0;
+
             students.push_back(s);
+            std::cout << "Student added!\n\n";
         }
     }
 
-    // ----------- MODE 2: LOAD FROM FOLDER -----------
+    // --------------------- MODE 2: LOAD FROM FOLDER ---------------------
     else if (mode == 2) {
         std::cout << "\nSelect a file from the Students.txt folder:\n";
         std::cout << "  1) students10000.txt\n";
@@ -76,15 +85,11 @@ int main() {
 
         int choice;
         std::cin >> choice;
-
         std::string filename;
 
-        if (choice == 1)
-            filename = "Students.txt/students10000.txt";
-        else if (choice == 2)
-            filename = "Students.txt/students100000.txt";
-        else if (choice == 3)
-            filename = "Students.txt/students1000000.txt";
+        if (choice == 1) filename = "Students.txt/students10000.txt";
+        else if (choice == 2) filename = "Students.txt/students100000.txt";
+        else if (choice == 3) filename = "Students.txt/students1000000.txt";
         else {
             std::cerr << "Invalid selection.\n";
             return 1;
@@ -97,12 +102,12 @@ int main() {
         }
 
         std::string line;
+        std::getline(infile, line); // Skip header if present
         while (std::getline(infile, line)) {
             if (line.empty()) continue;
 
             std::istringstream iss(line);
             Student s;
-
             if (!(iss >> s.name >> s.surname)) continue;
 
             double v;
@@ -121,7 +126,7 @@ int main() {
         }
     }
 
-    // ----------- MODE 3: RANDOM GENERATION -----------
+    // --------------------- MODE 3: RANDOM STUDENTS ---------------------
     else if (mode == 3) {
         std::cout << "How many students to generate? ";
         int count; std::cin >> count;
@@ -148,7 +153,7 @@ int main() {
         return 0;
     }
 
-    // ----------- CHOOSE FINAL CALCULATION METHOD -----------
+    // --------------------- CHOOSE CALCULATION METHOD ---------------------
     std::cout << "\nChoose calculation method:\n";
     std::cout << "  1) Average only\n";
     std::cout << "  2) Median only\n";
@@ -161,14 +166,14 @@ int main() {
     bool showBoth = (calcMode == 3);
     bool showAvgOnly = (calcMode == 1);
 
-    // Sort alphabetically
+    // Sort students by surname then name
     std::sort(students.begin(), students.end(),
               [](const Student& a, const Student& b) {
                   if (a.surname != b.surname) return a.surname < b.surname;
                   return a.name < b.name;
               });
 
-    // ----------- PRINT RESULTS -----------
+    // --------------------- PRINT RESULTS ---------------------
     printHeader(showBoth);
     std::cout << std::fixed << std::setprecision(2);
 

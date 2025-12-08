@@ -3,34 +3,32 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
 
 class Student {
 public:
-    // data members
     std::string name;
     std::string surname;
     std::vector<double> homeworks;
     double exam;
 
-    // constructors & rule of three
+    // Constructors
     Student();
-    Student(const std::string& name, const std::string& surname,
-            const std::vector<double>& hw, double exam);
-    Student(const Student& other);            // copy constructor
-    Student& operator=(const Student& other); // copy assignment
-    ~Student();                               // destructor
+    Student(const std::string& n, const std::string& s,
+            const std::vector<double>& hw, double e);
 
-    // input/output
-    friend std::istream& operator>>(std::istream& in, Student& s);
-    friend std::ostream& operator<<(std::ostream& out, const Student& s);
+    // Copy constructor (Rule of Three)
+    Student(const Student& other);
 
-    // grade calculations
-    double finalByAverage() const; // uses average of homeworks
-    double finalByMedian() const;  // uses median of homeworks
+    // Assignment operator (Rule of Three)
+    Student& operator=(const Student& other);
 
-    // utility
-    void randomize(unsigned int seed, size_t hwCount = 5, double minVal = 0, double maxVal = 10);
+    // Destructor (Rule of Three)
+    ~Student();
+
+    // Methods
+    double finalByAverage() const;
+    double finalByMedian() const;
+    void randomize(unsigned int seed, int hwCount, double minVal, double maxVal);
 };
 
 #endif // STUDENT_H
