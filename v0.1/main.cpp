@@ -7,190 +7,211 @@
 #include "Student.h"
 #include <limits>
 
-void printHeader(bool showMethod) {
+void printHeader(bool showBoth) {
     std::cout << std::left << std::setw(12) << "Name"
               << std::setw(14) << "Surname";
-    if (showMethod) {
+
+    if (showBoth) {
         std::cout << std::setw(16) << "Final (Avg.)"
                   << "| " << std::setw(12) << "Final (Med.)" << "\n";
         std::cout << std::string(58, '-') << "\n";
     } else {
-        std::cout << std::setw(16) << "Final_Point(Aver.)" << "\n";
+        std::cout << std::setw(16) << "Final Result" << "\n";
         std::cout << std::string(44, '-') << "\n";
     }
 }
 
 int main() {
-    std::cout << "Student Calculator (v0.1) - beginner friendly\n\n";
 
-    // Option menu
-    std::cout << "Choose input mode:\n";
-    std::cout << "  1) Enter students manually (keyboard)\n";
-    std::cout << "  2) Load from Students folder\n";
-    std::cout << "  3) Generate random students\n";
-    std::cout << "Select (1/2/3): ";
-    int mode;
-    if (!(std::cin >> mode)) return 0;
+    while (true) {   // ⭐ LOOP: Restart whole calculator after finishing
 
-    std::vector<Student> students;
+        std::cout << "Student Calculator (v0.1) - beginner friendly\n\n";
 
-    // --------------------- MODE 1: MANUAL INPUT ---------------------
-    if (mode == 1) {
+        // ---------------- MAIN MENU ----------------
+        std::cout << "Choose input mode:\n";
+        std::cout << "  1) Enter students manually (keyboard)\n";
+        std::cout << "  2) Load from Students folder\n";
+        std::cout << "  3) Generate random students\n";
+        std::cout << "  0) Exit program\n";
+        std::cout << "Select (0/1/2/3): ";
+
+        int mode;
+        if (!(std::cin >> mode)) return 0;
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Enter student data step by step.\n";
-        std::cout << "After entering homework grades, press Enter to finish HWs.\n";
-        std::cout << "Enter exam grade at the end.\n\n";
 
-        while (true) {
-            Student s;
+        if (mode == 0) {
+            std::cout << "Goodbye!\n";
+            return 0;
+        }
 
-            std::cout << "Enter student first name (or empty to finish): ";
-            std::getline(std::cin, s.name);
-            if (s.name.empty()) break;
+        std::vector<Student> students;
 
-            std::cout << "Enter student surname: ";
-            std::getline(std::cin, s.surname);
+        // ---------------- MODE 1: MANUAL INPUT ----------------
+        if (mode == 1) {
+            std::cout << "\nEnter students in format:\n";
+            std::cout << "Name Surname hw1 hw2 ... hwN exam\n";
+            std::cout << "Example: Adeola Ibrahim 2 4 6 7 8 9\n";
+            std::cout << "Press empty line to finish.\n\n";
 
-            // Enter homework grades
-            s.homeworks.clear();
-            std::cout << "Enter homework grades one by one (empty line to finish):\n";
             while (true) {
-                std::string hwLine;
-                std::getline(std::cin, hwLine);
-                if (hwLine.empty()) break;
-                double hw;
-                std::istringstream iss(hwLine);
-                if (iss >> hw) s.homeworks.push_back(hw);
-            }
+                std::string line;
+                std::getline(std::cin, line);
+                if (line.empty()) break;
 
-            // Enter exam grade
-            std::cout << "Enter exam grade: ";
-            std::string examLine;
-            std::getline(std::cin, examLine);
-            std::istringstream iss(examLine);
-            if (!(iss >> s.exam)) s.exam = 0.0;
+                std::istringstream iss(line);
 
-            students.push_back(s);
-            std::cout << "Student added!\n\n";
-        }
-    }
+                Student s;
+                if (!(iss >> s.name >> s.surname)) {
+                    std::cout << "❌ Invalid format. Try again.\n";
+                    continue;
+                }
 
-    // --------------------- MODE 2: LOAD FROM FOLDER ---------------------
-    else if (mode == 2) {
-        std::cout << "\nSelect a file from the Students.txt folder:\n";
-        std::cout << "  1) students10000.txt\n";
-        std::cout << "  2) students100000.txt\n";
-        std::cout << "  3) students1000000.txt\n";
-        std::cout << "Choose (1/2/3): ";
+                std::vector<double> nums;
+                double v;
+                while (iss >> v) nums.push_back(v);
 
-        int choice;
-        std::cin >> choice;
-        std::string filename;
+                if (nums.empty()) {
+                    std::cout << "❌ You must enter homework grades + exam.\n";
+                    continue;
+                }
 
-        if (choice == 1) filename = "Students.txt/students10000.txt";
-        else if (choice == 2) filename = "Students.txt/students100000.txt";
-        else if (choice == 3) filename = "Students.txt/students1000000.txt";
-        else {
-            std::cerr << "Invalid selection.\n";
-            return 1;
-        }
-
-        std::ifstream infile(filename);
-        if (!infile) {
-            std::cerr << "Could not open file: " << filename << "\n";
-            return 1;
-        }
-
-        std::string line;
-        std::getline(infile, line); // Skip header if present
-        while (std::getline(infile, line)) {
-            if (line.empty()) continue;
-
-            std::istringstream iss(line);
-            Student s;
-            if (!(iss >> s.name >> s.surname)) continue;
-
-            double v;
-            std::vector<double> nums;
-            while (iss >> v) nums.push_back(v);
-
-            if (!nums.empty()) {
                 s.exam = nums.back();
                 nums.pop_back();
                 s.homeworks = nums;
-            } else {
-                s.exam = 0.0;
+
+                students.push_back(s);
+                std::cout << "✔ Student added.\n";
+            }
+        }
+
+        // ---------------- MODE 2: LOAD FROM FILE ----------------
+        else if (mode == 2) {
+            std::cout << "\nSelect a file from the Students.txt folder:\n";
+            std::cout << "  1) students10000.txt\n";
+            std::cout << "  2) students100000.txt\n";
+            std::cout << "  3) students1000000.txt\n";
+            std::cout << "Choose (1/2/3): ";
+
+            int choice;
+            std::cin >> choice;
+
+            std::string filename;
+            if (choice == 1) filename = "Students.txt/students10000.txt";
+            else if (choice == 2) filename = "Students.txt/students100000.txt";
+            else if (choice == 3) filename = "Students.txt/students1000000.txt";
+            else {
+                std::cout << "Invalid choice.\n";
+                continue;
             }
 
-            students.push_back(s);
-        }
-    }
+            std::ifstream infile(filename);
+            if (!infile) {
+                std::cerr << "Could not open file.\n";
+                continue;
+            }
 
-    // --------------------- MODE 3: RANDOM STUDENTS ---------------------
-    else if (mode == 3) {
-        std::cout << "How many students to generate? ";
-        int count; std::cin >> count;
+            std::string line;
+            std::getline(infile, line);
+            while (std::getline(infile, line)) {
+                if (line.empty()) continue;
 
-        std::cout << "How many homework entries per student? ";
-        int hwCount; std::cin >> hwCount;
+                std::istringstream iss(line);
+                Student s;
 
-        for (int i = 0; i < count; ++i) {
-            Student s;
-            s.name = "Name" + std::to_string(i+1);
-            s.surname = "Surname" + std::to_string(i+1);
-            s.randomize(static_cast<unsigned int>(i + 42), hwCount, 0.0, 10.0);
-            students.push_back(s);
-        }
-    }
+                if (!(iss >> s.name >> s.surname)) continue;
 
-    else {
-        std::cerr << "Invalid selection\n";
-        return 1;
-    }
+                std::vector<double> nums;
+                double v;
+                while (iss >> v) nums.push_back(v);
 
-    if (students.empty()) {
-        std::cout << "No students loaded.\n";
-        return 0;
-    }
+                if (!nums.empty()) {
+                    s.exam = nums.back();
+                    nums.pop_back();
+                    s.homeworks = nums;
+                }
 
-    // --------------------- CHOOSE CALCULATION METHOD ---------------------
-    std::cout << "\nChoose calculation method:\n";
-    std::cout << "  1) Average only\n";
-    std::cout << "  2) Median only\n";
-    std::cout << "  3) Show both (Avg + Med)\n";
-    std::cout << "Select (1/2/3): ";
-
-    int calcMode;
-    std::cin >> calcMode;
-
-    bool showBoth = (calcMode == 3);
-    bool showAvgOnly = (calcMode == 1);
-
-    // Sort students by surname then name
-    std::sort(students.begin(), students.end(),
-              [](const Student& a, const Student& b) {
-                  if (a.surname != b.surname) return a.surname < b.surname;
-                  return a.name < b.name;
-              });
-
-    // --------------------- PRINT RESULTS ---------------------
-    printHeader(showBoth);
-    std::cout << std::fixed << std::setprecision(2);
-
-    for (const auto& s : students) {
-        std::cout << std::left << std::setw(12) << s.name
-                  << std::setw(14) << s.surname;
-
-        if (showBoth) {
-            std::cout << std::setw(16) << s.finalByAverage()
-                      << "| " << std::setw(12) << s.finalByMedian();
-        } else if (showAvgOnly) {
-            std::cout << std::setw(16) << s.finalByAverage();
-        } else {
-            std::cout << std::setw(16) << s.finalByMedian();
+                students.push_back(s);
+            }
         }
 
-        std::cout << "\n";
+        // ---------------- MODE 3: RANDOM GENERATION ----------------
+        else if (mode == 3) {
+            int count, hwCount;
+
+            std::cout << "How many students to generate? ";
+            std::cin >> count;
+            std::cout << "How many homework grades? ";
+            std::cin >> hwCount;
+
+            for (int i = 0; i < count; ++i) {
+                Student s;
+                s.name = "Name" + std::to_string(i + 1);
+                s.surname = "Surname" + std::to_string(i + 1);
+                s.randomize(i + 42, hwCount, 0.0, 10.0);
+                students.push_back(s);
+            }
+        }
+
+        else {
+            std::cout << "Invalid option.\n";
+            continue;
+        }
+
+        if (students.empty()) {
+            std::cout << "No students loaded.\n";
+            continue;
+        }
+
+        // ---------------- CALCULATION METHOD ----------------
+        std::cout << "\nChoose calculation method:\n";
+        std::cout << "  1) Average only\n";
+        std::cout << "  2) Median only\n";
+        std::cout << "  3) Show both\n";
+        std::cout << "Select (1/2/3): ";
+
+        int calcMode;
+        std::cin >> calcMode;
+
+        bool showBoth = (calcMode == 3);
+        bool showAvgOnly = (calcMode == 1);
+
+        // ---------------- SORT ----------------
+        std::sort(students.begin(), students.end(),
+                [](const Student& a, const Student& b) {
+                    if (a.surname != b.surname) return a.surname < b.surname;
+                    return a.name < b.name;
+                });
+
+        // ---------------- OUTPUT ----------------
+        printHeader(showBoth);
+        std::cout << std::fixed << std::setprecision(2);
+
+        for (const auto& s : students) {
+            std::cout << std::left << std::setw(12) << s.name
+                      << std::setw(14) << s.surname;
+
+            if (showBoth) {
+                std::cout << std::setw(16) << s.finalByAverage()
+                          << "| " << std::setw(12) << s.finalByMedian();
+            } else if (showAvgOnly) {
+                std::cout << std::setw(16) << s.finalByAverage();
+            } else {
+                std::cout << std::setw(16) << s.finalByMedian();
+            }
+
+            std::cout << "\n";
+        }
+
+        // ---------------- ASK TO RETURN TO MENU ----------------
+        char again;
+        std::cout << "\nReturn to main menu? (y/n): ";
+        std::cin >> again;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        if (again == 'n' || again == 'N') {
+            std::cout << "Goodbye!\n";
+            return 0;
+        }
     }
 
     return 0;
