@@ -8,3 +8,7 @@ It reads homework and exam scores and computes final grades (by average or by me
 - Final (med) = 0.4 * (median of homework scores) + 0.6 * (exam score)
 
 Subproject `v0.1` contains the initial working implementation (C++): reading from keyboard, random generation, reading from `Students.txt`, sorting, and formatted output.
+
+# Execute
+./StudentCalculator
+
