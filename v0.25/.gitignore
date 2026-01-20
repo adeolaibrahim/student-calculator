@@ -1,0 +1,21 @@
+# Build folders
+build/
+*/build/
+
+# Compiled binaries
+*.exe
+StudentCalculator
+
+# Generated student files
+students*.txt
+passed.txt
+failed.txt
+
+# CMake generated
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# OS
+.DS_Store
